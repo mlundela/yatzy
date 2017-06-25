@@ -2,6 +2,11 @@ import {groupBy} from 'lodash/collection';
 import {range} from 'lodash/util';
 import {intersection} from 'lodash/array';
 
+export const RandomRoller = {
+  roll: n => range(0, n)
+    .map(() => Math.floor((Math.random() * 6) + 1))
+};
+
 export const ScoreBoard = {
   ONES: 'ones',
   TWOS: 'twos',
@@ -185,7 +190,7 @@ const reducer = (state, action) => {
 
 export class Yatzy {
 
-  constructor({numberOfPlayers}, roller) {
+  constructor({numberOfPlayers}, roller = RandomRoller) {
     this.state = initialState(numberOfPlayers);
     this.roller = roller;
   }

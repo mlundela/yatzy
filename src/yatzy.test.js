@@ -1,4 +1,4 @@
-import {containsAll, isValidSelection, Yatzy, ScoreBoard, scoreReducer} from './yatzy';
+import {containsAll, isValidSelection, Yatzy, ScoreBoard, scoreReducer, RandomRoller} from './yatzy';
 
 const createFakeRoller = rolls => {
   let n = 0;
@@ -236,4 +236,8 @@ test('Cross out small street', () => {
   expect(scoreBoard).toHaveProperty(ScoreBoard.SMALL_STREET, 0);
   expect(() => yatzy.score(ScoreBoard.SMALL_STREET, [1, 2, 3, 4, 5])).toThrow('Illegal score');
 
+});
+
+test('test default roller', () => {
+  expect(RandomRoller.roll(6).length).toEqual(6)
 });
