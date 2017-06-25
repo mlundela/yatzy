@@ -1,10 +1,4 @@
-import {
-  containsAll,
-  isValidSelection,
-  Yatzy,
-  ScoreBoard,
-  scoreReducer
-} from './yatzy';
+import {containsAll, isValidSelection, Yatzy, ScoreBoard, scoreReducer} from './yatzy';
 
 const createFakeRoller = rolls => {
   let n = 0;
@@ -95,9 +89,9 @@ test('Legal score - three pairs', () => {
 
 test(`Legal score - ${ScoreBoard.CABIN}`, () => {
   const roller = createFakeRoller([
-      [1, 1, 2, 3, 4, 5],
-      [3, 3, 5, 6],
-      [3, 4],
+    [1, 1, 2, 3, 4, 5],
+    [3, 3, 5, 6],
+    [3, 4],
   ]);
   const yatzy = new Yatzy({numberOfPlayers: 2}, roller);
   yatzy.roll();
@@ -165,23 +159,81 @@ test('Maximum 3 rolls per turn', () => {
   expect(() => yatzy.roll()).toThrow('Max three rolls per turn');
 });
 
-test.only('Bonus should be 100 if SUM ones through sixes >= 84', () => {
-    const yatzy = new Yatzy({numberOfPlayers: 1}, () => {});
-    const state = {
-        player: 0,
-        dice: [5, 5, 5, 5, 5, 5],
-        scoreBoard: [{
-          [ScoreBoard.ONES]: 6,
-          [ScoreBoard.TWOS]: 12,
-          [ScoreBoard.THREES]: 18,
-          [ScoreBoard.FOURS]: 24
-        }]
-    };
+test('Bonus should be 100 if SUM ones through sixes >= 84', () => {
 
-    const action = { row: ScoreBoard.FIVES, selection: [5, 5, 5, 5, 5, 5] };
+  const state = {
+    player: 0,
+    dice: [5, 5, 5, 5, 5, 5],
+    scoreBoard: [{
+      [ScoreBoard.ONES]: 4,
+      [ScoreBoard.TWOS]: 8,
+      [ScoreBoard.THREES]: 12,
+      [ScoreBoard.FOURS]: 16,
+      [ScoreBoard.FIVES]: 0,
+      [ScoreBoard.SIXES]: 24,
+    }]
+  };
 
-    const newState = scoreReducer(state, action);
+  const action = {row: ScoreBoard.FIVES, selection: [5, 5, 5, 5, 5, 5]};
 
-    expect(newState.scoreBoard[0])
-        .toHaveProperty(ScoreBoard.BONUS, 100);
+  const newState = scoreReducer(state, action);
+
+  expect(newState.scoreBoard[0])
+    .toHaveProperty(ScoreBoard.BONUS, 100);
+});
+
+test('YATZY is worth 100 points', () => {
+
+  const state = {
+    player: 0,
+    dice: [5, 5, 5, 5, 5, 5],
+    scoreBoard: [{}]
+  };
+
+  const action = {row: ScoreBoard.YATZY, selection: [5, 5, 5, 5, 5, 5]};
+  const newState = scoreReducer(state, action);
+
+  expect(newState.scoreBoard[0])
+    .toHaveProperty(ScoreBoard.YATZY, 100);
+
+});
+
+test('One can not score without rolling first', () => {
+
+  const roller = {roll: () => [1, 2, 3, 4, 5, 6]};
+  const yatzy = new Yatzy({numberOfPlayers: 1}, roller);
+
+  yatzy.roll();
+  yatzy.score(ScoreBoard.ONES, [1]);
+  yatzy.score(ScoreBoard.TWOS, [2]);
+
+  expect(() => yatzy.score(ScoreBoard.ONES, [1])).toThrow('Illegal score');
+});
+
+test('One can not score same row more than once', () => {
+
+  const roller = {roll: () => [1, 2, 3, 4, 5, 6]};
+  const yatzy = new Yatzy({numberOfPlayers: 1}, roller);
+
+  yatzy.roll();
+  yatzy.score(ScoreBoard.ONES, [1]);
+  yatzy.roll();
+  yatzy.score(ScoreBoard.ONES, [1]);
+
+  expect(() => yatzy.score(ScoreBoard.ONES, [1])).toThrow('Illegal score');
+});
+
+test('Cross out small street', () => {
+
+  const roller = {roll: () => [1, 2, 3, 4, 5, 6]};
+  const yatzy = new Yatzy({numberOfPlayers: 1}, roller);
+
+  yatzy.cross(ScoreBoard.SMALL_STREET);
+  yatzy.roll();
+
+  const scoreBoard = yatzy.getScoreBoard()[0];
+
+  expect(scoreBoard).toHaveProperty(ScoreBoard.SMALL_STREET, 0);
+  expect(() => yatzy.score(ScoreBoard.SMALL_STREET, [1, 2, 3, 4, 5])).toThrow('Illegal score');
+
 });

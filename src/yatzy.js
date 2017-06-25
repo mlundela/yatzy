@@ -58,26 +58,46 @@ export const isValidSelection = (dice, row, selection) => {
   const isOnly = n => selection.every(val => val === n);
 
   switch (row) {
-    case ScoreBoard.ONES:         return isOnly(1);
-    case ScoreBoard.TWOS:         return isOnly(2);
-    case ScoreBoard.THREES:       return isOnly(3);
-    case ScoreBoard.FOURS:        return isOnly(4);
-    case ScoreBoard.FIVES:        return isOnly(5);
-    case ScoreBoard.SIXES:        return isOnly(6);
-    case ScoreBoard.ONE_PAIR:     return isGroupOf(2);
-    case ScoreBoard.TWO_PAIRS:    return isGroupOf(2, 2);
-    case ScoreBoard.THREE_PAIRS:  return isGroupOf(2, 2, 2);
-    case ScoreBoard.THREE_ALIKE:  return isGroupOf(3);
-    case ScoreBoard.FOUR_ALIKE:   return isGroupOf(4);
-    case ScoreBoard.FIVE_ALIKE:   return isGroupOf(5);
-    case ScoreBoard.CABIN:        return isGroupOf(2, 3);
-    case ScoreBoard.HOUSE:        return isGroupOf(3, 3);
-    case ScoreBoard.TOWER:        return isGroupOf(2, 4);
-    case ScoreBoard.SMALL_STREET: return isEqualTo([1, 2, 3, 4, 5]);
-    case ScoreBoard.LARGE_STREET: return isEqualTo([2, 3, 4, 5, 6]);
-    case ScoreBoard.FULL_STREET:  return isEqualTo([1, 2, 3, 4, 5, 6]);
-    case ScoreBoard.YATZY:        return isGroupOf(6);
-    default: return true;
+    case ScoreBoard.ONES:
+      return isOnly(1);
+    case ScoreBoard.TWOS:
+      return isOnly(2);
+    case ScoreBoard.THREES:
+      return isOnly(3);
+    case ScoreBoard.FOURS:
+      return isOnly(4);
+    case ScoreBoard.FIVES:
+      return isOnly(5);
+    case ScoreBoard.SIXES:
+      return isOnly(6);
+    case ScoreBoard.ONE_PAIR:
+      return isGroupOf(2);
+    case ScoreBoard.TWO_PAIRS:
+      return isGroupOf(2, 2);
+    case ScoreBoard.THREE_PAIRS:
+      return isGroupOf(2, 2, 2);
+    case ScoreBoard.THREE_ALIKE:
+      return isGroupOf(3);
+    case ScoreBoard.FOUR_ALIKE:
+      return isGroupOf(4);
+    case ScoreBoard.FIVE_ALIKE:
+      return isGroupOf(5);
+    case ScoreBoard.CABIN:
+      return isGroupOf(2, 3);
+    case ScoreBoard.HOUSE:
+      return isGroupOf(3, 3);
+    case ScoreBoard.TOWER:
+      return isGroupOf(2, 4);
+    case ScoreBoard.SMALL_STREET:
+      return isEqualTo([1, 2, 3, 4, 5]);
+    case ScoreBoard.LARGE_STREET:
+      return isEqualTo([2, 3, 4, 5, 6]);
+    case ScoreBoard.FULL_STREET:
+      return isEqualTo([1, 2, 3, 4, 5, 6]);
+    case ScoreBoard.YATZY:
+      return isGroupOf(6);
+    default:
+      return true;
   }
 };
 
@@ -95,41 +115,57 @@ const initialState = numberOfPlayers => ({
 });
 
 export const rollReducer = (state, action) => {
-    const {dice, selection} = action;
-    const {rollCount} = state;
+  const {dice, selection} = action;
+  const {rollCount} = state;
 
-    if(rollCount > 2) {
-        throw 'Max three rolls per turn';
-    }
+  if (rollCount > 2) {
+    throw 'Max three rolls per turn';
+  }
 
-    const activeDice = state.rollCount > 0
-        ? [...rest(state.dice, selection), ...dice]
-        : dice;
+  const activeDice = state.rollCount > 0
+    ? [...rest(state.dice, selection), ...dice]
+    : dice;
 
-    return {
-        ...state,
-        dice: activeDice,
-        rollCount: state.rollCount + 1
-    };
+  return {
+    ...state,
+    dice: activeDice,
+    rollCount: state.rollCount + 1
+  };
 };
 
 export const scoreReducer = (state, action) => {
-    const {row, selection} = action;
 
-    if (!isValidSelection(state.dice, row, selection)) {
-        throw 'Illegal score';
-    }
+  const {row, selection} = action;
+
+  if (!isValidSelection(state.dice, row, selection)) {
+    throw 'Illegal score';
+  }
+
+  const updateBoard = (board) => {
+
+    const bonusAchieved =
+      board[ScoreBoard.ONES] +
+      board[ScoreBoard.TWOS] +
+      board[ScoreBoard.THREES] +
+      board[ScoreBoard.FOURS] +
+      board[ScoreBoard.FIVES] +
+      board[ScoreBoard.SIXES];
 
     return {
-        ...state,
-        player: (state.player + 1) % state.scoreBoard.length,
-        rollCount: 0,
-        scoreBoard: state.scoreBoard.map((board, i) =>
-            i === state.player
-                ? ({...board, [action.row]: selection.reduce(sum, 0)})
-                : board
-        )
-    };
+      ...board,
+      [action.row]: selection.reduce(sum, 0),
+      [ScoreBoard.BONUS]: bonusAchieved ? 100 : 0
+    }
+  };
+
+  return {
+    ...state,
+    player: (state.player + 1) % state.scoreBoard.length,
+    rollCount: 0,
+    scoreBoard: state
+      .scoreBoard
+      .map((board, i) => i === state.player ? updateBoard(board) : board)
+  };
 };
 
 const reducer = (state, action) => {
@@ -156,6 +192,10 @@ export class Yatzy {
 
   score(row, selection) {
     this.state = reducer(this.state, {type: 'score', row, selection});
+  }
+
+  cross(row) {
+    // todo
   }
 
   getScoreBoard() {
