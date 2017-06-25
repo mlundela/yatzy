@@ -15,7 +15,7 @@ export const ScoreBoard = {
   FIVES: 'fives',
   SIXES: 'sixes',
   BONUS: 'bonus',
-  ONE_PAIR: 'pair',
+  ONE_PAIR: 'onePair',
   TWO_PAIRS: 'twoPairs',
   THREE_PAIRS: 'threePairs',
   THREE_ALIKE: 'threeAlike',
@@ -110,14 +110,32 @@ const createScoreBoard = () => Object
   .values(ScoreBoard)
   .reduce((obj, row) => ({...obj, [row]: 0}), {});
 
-const getTotalScore = scoreBoard => scoreBoard.map(b => Object.values(b).reduce(sum, 0));
+const getTotalScore = scoreBoard => scoreBoard.map(b => Object.values(b).filter(v => v >= 0).reduce(sum, 0));
 
-const initialState = numberOfPlayers => ({
+export const createInitialState = numberOfPlayers => ({
   dice: [],
   rollCount: 0,
   player: 0,
   scoreBoard: range(0, numberOfPlayers).map(createScoreBoard)
 });
+
+export const crossReducer = (state, action) => {
+    const updateBoard = (board) => {
+        return {
+            ...board,
+            [action.row]: -1
+        }
+    };
+
+    return {
+        ...state,
+        player: (state.player + 1) % state.scoreBoard.length,
+        rollCount: 0,
+        scoreBoard: state
+            .scoreBoard
+            .map((board, i) => i === state.player ? updateBoard(board) : board)
+    };
+};
 
 export const rollReducer = (state, action) => {
   const {dice, selection} = action;
@@ -138,28 +156,29 @@ export const rollReducer = (state, action) => {
   };
 };
 
+const isBonusAchieved = board =>
+    board[ScoreBoard.ONES] +
+    board[ScoreBoard.TWOS] +
+    board[ScoreBoard.THREES] +
+    board[ScoreBoard.FOURS] +
+    board[ScoreBoard.FIVES] +
+    board[ScoreBoard.SIXES];
+
 export const scoreReducer = (state, action) => {
 
   const {row, selection} = action;
-
-  if (!isValidSelection(state.dice, row, selection)) {
+  if (state.scoreBoard[state.player][action.row] !== 0 ||
+      state.rollCount === 0 ||
+      !isValidSelection(state.dice, row, selection)
+  ) {
     throw 'Illegal score';
   }
 
   const updateBoard = (board) => {
-
-    const bonusAchieved =
-      board[ScoreBoard.ONES] +
-      board[ScoreBoard.TWOS] +
-      board[ScoreBoard.THREES] +
-      board[ScoreBoard.FOURS] +
-      board[ScoreBoard.FIVES] +
-      board[ScoreBoard.SIXES];
-
     return {
       ...board,
-      [action.row]: selection.reduce(sum, 0),
-      [ScoreBoard.BONUS]: bonusAchieved ? 100 : 0
+      [action.row]: action.row === ScoreBoard.YATZY ? 100 : selection.reduce(sum, 0),
+      [ScoreBoard.BONUS]: isBonusAchieved(board) ? 100 : 0
     }
   };
 
@@ -183,6 +202,9 @@ const reducer = (state, action) => {
     case 'score':
       return scoreReducer(state, action);
 
+    case 'cross':
+      return crossReducer(state, action);
+
     default:
       throw `Unhandled action type: '${action.type}'`
   }
@@ -191,7 +213,7 @@ const reducer = (state, action) => {
 export class Yatzy {
 
   constructor({numberOfPlayers}, roller = RandomRoller) {
-    this.state = initialState(numberOfPlayers);
+    this.state = createInitialState(numberOfPlayers);
     this.roller = roller;
   }
 
@@ -200,7 +222,7 @@ export class Yatzy {
   }
 
   cross(row) {
-    // todo
+    this.state = reducer(this.state, {type: 'cross', row});
   }
 
   getScoreBoard() {

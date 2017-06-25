@@ -1,4 +1,4 @@
-import {containsAll, isValidSelection, Yatzy, ScoreBoard, scoreReducer, RandomRoller} from './yatzy';
+import {containsAll, isValidSelection, Yatzy, ScoreBoard, scoreReducer, RandomRoller, createInitialState} from './yatzy';
 
 const createFakeRoller = rolls => {
   let n = 0;
@@ -8,9 +8,9 @@ const createFakeRoller = rolls => {
 };
 
 test('isValidSelection', () => {
-  expect(isValidSelection([1, 1, 2, 3, 4, 5], 'pair', [1, 1])).toBeTruthy();
-  expect(isValidSelection([1, 1, 1, 2, 3, 4], 'pair', [1, 1, 1])).toBeFalsy();
-  expect(isValidSelection([1, 2, 3, 4, 5, 6], 'pair', [1, 2])).toBeFalsy();
+  expect(isValidSelection([1, 1, 2, 3, 4, 5], 'onePair', [1, 1])).toBeTruthy();
+  expect(isValidSelection([1, 1, 1, 2, 3, 4], 'onePair', [1, 1, 1])).toBeFalsy();
+  expect(isValidSelection([1, 2, 3, 4, 5, 6], 'onePair', [1, 2])).toBeFalsy();
 });
 
 test('containsAll', () => {
@@ -185,9 +185,9 @@ test('Bonus should be 100 if SUM ones through sixes >= 84', () => {
 test('YATZY is worth 100 points', () => {
 
   const state = {
-    player: 0,
-    dice: [5, 5, 5, 5, 5, 5],
-    scoreBoard: [{}]
+    ...createInitialState(1),
+    rollCount: 1,
+    dice: [5, 5, 5, 5, 5, 5]
   };
 
   const action = {row: ScoreBoard.YATZY, selection: [5, 5, 5, 5, 5, 5]};
@@ -205,7 +205,6 @@ test('One can not score without rolling first', () => {
 
   yatzy.roll();
   yatzy.score(ScoreBoard.ONES, [1]);
-  yatzy.score(ScoreBoard.TWOS, [2]);
 
   expect(() => yatzy.score(ScoreBoard.ONES, [1])).toThrow('Illegal score');
 });
@@ -215,8 +214,6 @@ test('One can not score same row more than once', () => {
   const roller = {roll: () => [1, 2, 3, 4, 5, 6]};
   const yatzy = new Yatzy({numberOfPlayers: 1}, roller);
 
-  yatzy.roll();
-  yatzy.score(ScoreBoard.ONES, [1]);
   yatzy.roll();
   yatzy.score(ScoreBoard.ONES, [1]);
 
@@ -233,9 +230,8 @@ test('Cross out small street', () => {
 
   const scoreBoard = yatzy.getScoreBoard()[0];
 
-  expect(scoreBoard).toHaveProperty(ScoreBoard.SMALL_STREET, 0);
+  expect(scoreBoard).toHaveProperty(ScoreBoard.SMALL_STREET, -1);
   expect(() => yatzy.score(ScoreBoard.SMALL_STREET, [1, 2, 3, 4, 5])).toThrow('Illegal score');
-
 });
 
 test('test default roller', () => {
