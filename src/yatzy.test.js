@@ -101,6 +101,15 @@ test(`Legal score - ${ScoreBoard.CABIN}`, () => {
   expect(yatzy.getScore(0)).toEqual(11);
 });
 
+test(`${ScoreBoard.CHANCE} takes six values`, () => {
+    const roller = createFakeRoller([
+        [1, 1, 2, 3, 4, 5],
+    ]);
+    const yatzy = new Yatzy({numberOfPlayers: 1}, roller);
+    yatzy.roll();
+    expect(() => yatzy.score(ScoreBoard.CHANCE, [1])).toThrow('Illegal score');
+});
+
 test('Place illegal score - one pair', () => {
   const roller = createFakeRoller([[1, 1, 3, 3, 3, 6]]);
   const yatzy = new Yatzy({numberOfPlayers: 2}, roller);
