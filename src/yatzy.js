@@ -101,6 +101,11 @@ const reducer = (state, action) => {
     case 'roll': {
 
       const {dice, selection} = action;
+      const {rollCount} = state;
+
+      if(rollCount > 2) {
+        throw 'Max three rolls per turn';
+      }
 
       const activeDice = state.rollCount > 0
         ? [...rest(state.dice, selection), ...dice]
@@ -156,7 +161,7 @@ export class Yatzy {
     return getTotalScore(this.state.scoreBoard)[playerIndex];
   }
 
-  roll(selection) {
+  roll(selection = []) {
     const n = selection ? selection.length : 6;
     const dice = this.roller.roll(n);
     this.state = reducer(this.state, {type: 'roll', dice, selection});
