@@ -1,4 +1,10 @@
-import {containsAll, isValidSelection, Yatzy, ScoreBoard} from './yatzy';
+import {
+  containsAll,
+  isValidSelection,
+  Yatzy,
+  ScoreBoard,
+  scoreReducer
+} from './yatzy';
 
 const createFakeRoller = rolls => {
   let n = 0;
@@ -79,12 +85,26 @@ test('Place score on twoPairs (ones and threes) should give player1 8 points', (
   expect(yatzy.getScore(0)).toEqual(8);
 });
 
-test('Legal move - three pairs', () => {
+test('Legal score - three pairs', () => {
   const roller = createFakeRoller([[1, 1, 3, 3, 6, 6]]);
   const yatzy = new Yatzy({numberOfPlayers: 2}, roller);
   yatzy.roll();
   yatzy.score(ScoreBoard.THREE_PAIRS, [1, 1, 3, 3, 6, 6]);
   expect(yatzy.getScore(0)).toEqual(20);
+});
+
+test(`Legal score - ${ScoreBoard.CABIN}`, () => {
+  const roller = createFakeRoller([
+      [1, 1, 2, 3, 4, 5],
+      [3, 3, 5, 6],
+      [3, 4],
+  ]);
+  const yatzy = new Yatzy({numberOfPlayers: 2}, roller);
+  yatzy.roll();
+  yatzy.roll([2, 3, 4, 5]);
+  yatzy.roll([5, 6]);
+  yatzy.score(ScoreBoard.CABIN, [1, 1, 3, 3, 3]);
+  expect(yatzy.getScore(0)).toEqual(11);
 });
 
 test('Place illegal score - one pair', () => {
@@ -145,3 +165,23 @@ test('Maximum 3 rolls per turn', () => {
   expect(() => yatzy.roll()).toThrow('Max three rolls per turn');
 });
 
+test.only('Bonus should be 100 if SUM ones through sixes >= 84', () => {
+    const yatzy = new Yatzy({numberOfPlayers: 1}, () => {});
+    const state = {
+        player: 0,
+        dice: [5, 5, 5, 5, 5, 5],
+        scoreBoard: [{
+          [ScoreBoard.ONES]: 6,
+          [ScoreBoard.TWOS]: 12,
+          [ScoreBoard.THREES]: 18,
+          [ScoreBoard.FOURS]: 24
+        }]
+    };
+
+    const action = { row: ScoreBoard.FIVES, selection: [5, 5, 5, 5, 5, 5] };
+
+    const newState = scoreReducer(state, action);
+
+    expect(newState.scoreBoard[0])
+        .toHaveProperty(ScoreBoard.BONUS, 100);
+});

@@ -94,48 +94,53 @@ const initialState = numberOfPlayers => ({
   scoreBoard: range(0, numberOfPlayers).map(createScoreBoard)
 });
 
-const reducer = (state, action) => {
+export const rollReducer = (state, action) => {
+    const {dice, selection} = action;
+    const {rollCount} = state;
 
-  switch (action.type) {
-
-    case 'roll': {
-
-      const {dice, selection} = action;
-      const {rollCount} = state;
-
-      if(rollCount > 2) {
+    if(rollCount > 2) {
         throw 'Max three rolls per turn';
-      }
+    }
 
-      const activeDice = state.rollCount > 0
+    const activeDice = state.rollCount > 0
         ? [...rest(state.dice, selection), ...dice]
         : dice;
 
-      return {
+    return {
         ...state,
         dice: activeDice,
         rollCount: state.rollCount + 1
-      };
+    };
+};
+
+export const scoreReducer = (state, action) => {
+    const {row, selection} = action;
+
+    if (!isValidSelection(state.dice, row, selection)) {
+        throw 'Illegal score';
     }
 
-    case 'score':
-
-      const {row, selection} = action;
-
-      if (!isValidSelection(state.dice, row, selection)) {
-        throw 'Illegal score';
-      }
-
-      return {
+    return {
         ...state,
         player: (state.player + 1) % state.scoreBoard.length,
         rollCount: 0,
         scoreBoard: state.scoreBoard.map((board, i) =>
-          i === state.player
-            ? ({...board, [action.row]: selection.reduce(sum, 0)})
-            : board
+            i === state.player
+                ? ({...board, [action.row]: selection.reduce(sum, 0)})
+                : board
         )
-      };
+    };
+};
+
+const reducer = (state, action) => {
+
+  switch (action.type) {
+
+    case 'roll':
+      return rollReducer(state, action);
+
+    case 'score':
+      return scoreReducer(state, action);
 
     default:
       throw `Unhandled action type: '${action.type}'`
