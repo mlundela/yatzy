@@ -33,7 +33,7 @@ test('Initial score should be 0', () => {
 
 test('Initial score should have length equal to number of players', () => {
   const yatzy = new Yatzy({numberOfPlayers: 2});
-  expect(yatzy.getScoreBoard().length).toEqual(2);
+  expect(yatzy.getScoreBoards().length).toEqual(2);
 });
 
 test('Place score on ones should give first player 1 point', () => {
@@ -178,7 +178,7 @@ test('Cross out small street', () => {
   yatzy.cross(ScoreBoard.SMALL_STREET);
   yatzy.roll();
 
-  const scoreBoard = yatzy.getScoreBoard()[0];
+  const scoreBoard = yatzy.getScoreBoards()[0];
 
   expect(scoreBoard).toHaveProperty(ScoreBoard.SMALL_STREET, -1);
   expect(() => yatzy.score(ScoreBoard.SMALL_STREET, [1, 2, 3, 4, 5])).toThrow('Illegal score');
@@ -220,4 +220,11 @@ test('A player use 1 token to roll 4 times', () => {
   yatzy.roll();
   yatzy.cross(ScoreBoard.LARGE_STREET);
   expect(yatzy.getTokens(0)).toEqual(0);
+});
+
+test('Yatzy.getOpenRows should return all unused slots/rows', () => {
+    const yatzy = new Yatzy({numberOfPlayers: 1});
+    expect(yatzy.getOpenRows(0)).toEqual(Object.values(ScoreBoard));
+    yatzy.cross(ScoreBoard.SMALL_STREET);
+    expect(yatzy.getOpenRows(0)).toEqual(Object.values(ScoreBoard).filter(v => v != ScoreBoard.SMALL_STREET));
 });

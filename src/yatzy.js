@@ -16,7 +16,11 @@ export class Yatzy {
     this.state = reducer(this.state, {type: 'cross', row});
   }
 
-  getScoreBoard() {
+  getOpenRows(playerIndex) {
+    return [];
+  }
+
+  getScoreBoards() {
     return this.state.scoreBoards;
   }
 
