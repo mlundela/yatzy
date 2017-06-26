@@ -306,13 +306,13 @@ test('A player receives 2 tokens', () => {
   const yatzy = new Yatzy({numberOfPlayers: 1});
   yatzy.roll();
   yatzy.cross(ScoreBoard.SMALL_STREET);
-  expect(yatzy.getTokens(0)).toEqual(1);
+  expect(yatzy.getTokens(0)).toEqual(2);
 });
 
 test('A player receives 3 tokens', () => {
   const yatzy = new Yatzy({numberOfPlayers: 1});
   yatzy.cross(ScoreBoard.SMALL_STREET);
-  expect(yatzy.getTokens(0)).toEqual(1);
+  expect(yatzy.getTokens(0)).toEqual(3);
 });
 
 test('A player use 1 token to roll 4 times', () => {
