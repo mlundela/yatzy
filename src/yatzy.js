@@ -2,7 +2,7 @@ import {groupBy} from 'lodash/collection';
 import {range} from 'lodash/util';
 import {intersection} from 'lodash/array';
 
-export const RandomRoller = {
+export const RandomDice = {
   roll: n => range(0, n)
     .map(() => Math.floor((Math.random() * 6) + 1))
 };
@@ -31,7 +31,7 @@ export const ScoreBoard = {
   YATZY: 'yatzy',
 };
 
-const sum = (acc, curr) => acc + curr;
+export const sum = (acc, curr) => acc + curr;
 
 const rest = (superset, subset) => {
   let rest = [...superset];
@@ -99,6 +99,8 @@ export const isValidSelection = (dice, row, selection) => {
       return isEqualTo([2, 3, 4, 5, 6]);
     case ScoreBoard.FULL_STREET:
       return isEqualTo([1, 2, 3, 4, 5, 6]);
+    case ScoreBoard.CHANCE:
+      return selection.length === 6;
     case ScoreBoard.YATZY:
       return isGroupOf(6);
     default:
@@ -110,12 +112,13 @@ const createScoreBoard = () => Object
   .values(ScoreBoard)
   .reduce((obj, row) => ({...obj, [row]: 0}), {});
 
-const getTotalScore = scoreBoard => scoreBoard.map(b => Object.values(b).filter(v => v >= 0).reduce(sum, 0));
+export const getTotalScore = scoreBoard => scoreBoard.map(b => Object.values(b).filter(v => v >= 0).reduce(sum, 0));
 
 export const createInitialState = numberOfPlayers => ({
   dice: [],
   rollCount: 0,
   player: 0,
+  tokens: range(0, numberOfPlayers).map(() => 0),
   scoreBoard: range(0, numberOfPlayers).map(createScoreBoard)
 });
 
@@ -162,7 +165,7 @@ const isBonusAchieved = board =>
     board[ScoreBoard.THREES] +
     board[ScoreBoard.FOURS] +
     board[ScoreBoard.FIVES] +
-    board[ScoreBoard.SIXES];
+    board[ScoreBoard.SIXES] >= 84;
 
 export const scoreReducer = (state, action) => {
 
@@ -175,10 +178,13 @@ export const scoreReducer = (state, action) => {
   }
 
   const updateBoard = (board) => {
-    return {
+    const updatedBoard = {
       ...board,
-      [action.row]: action.row === ScoreBoard.YATZY ? 100 : selection.reduce(sum, 0),
-      [ScoreBoard.BONUS]: isBonusAchieved(board) ? 100 : 0
+      [action.row]: action.row === ScoreBoard.YATZY ? 100 : selection.reduce(sum, 0)
+    };
+    return {
+      ...updatedBoard,
+      [ScoreBoard.BONUS]: isBonusAchieved(updatedBoard) ? 100 : 0
     }
   };
 
@@ -212,9 +218,9 @@ const reducer = (state, action) => {
 
 export class Yatzy {
 
-  constructor({numberOfPlayers}, roller = RandomRoller) {
+  constructor({numberOfPlayers}, dice = RandomDice) {
     this.state = createInitialState(numberOfPlayers);
-    this.roller = roller;
+    this.dice = dice;
   }
 
   score(row, selection) {
@@ -233,9 +239,13 @@ export class Yatzy {
     return getTotalScore(this.state.scoreBoard)[playerIndex];
   }
 
+  getTokens(playerIndex) {
+    return this.state.tokens[playerIndex];
+  }
+
   roll(selection = []) {
     const n = selection ? selection.length : 6;
-    const dice = this.roller.roll(n);
+    const dice = this.dice.roll(n);
     this.state = reducer(this.state, {type: 'roll', dice, selection});
     return dice;
   }
