@@ -2,13 +2,15 @@
   "name": "yatzy",
   "version": "1.0.0",
   "description": "",
-  "main": "src/yatzy.js",
+  "main": "lib/yatzy.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "prepublish": "babel -d lib/ src/"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "babel-cli": "^6.24.1",
     "babel-jest": "20.0.3",
     "babel-plugin-transform-object-rest-spread": "6.23.0",
     "babel-preset-es2015": "6.24.1",
