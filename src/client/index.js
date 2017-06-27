@@ -4,35 +4,55 @@ import {ScoreBoard} from '../ScoreBoard';
 
 const game = new Yatzy({numberOfPlayers: 1});
 
-const promptAction = (selection = null) =>
+const toString = value => value.toString();
+
+const toInt = value => parseInt(value);
+
+const promptAction = (selection = null) => {
+    console.log('Dice:', game.state.dice);
     inquirer.prompt([{
         type: "list",
         name: "action",
         message: "Choose your action",
         choices: [
-            "Score",
-            "Cross",
             "Roll",
-            "Show scoreboard"
+            "Score"
         ]
-    }]).then(({ action }) => {
-        if(action === "Roll") {
-            game.roll(selection);
-            console.log('Dice:', game.state.dice);
-            promptAction();
+    }]).then(({action}) => {
+        if (action === "Roll") {
+            promptRoll();
         }
-        else if(action === "Score") {
-            promptRow();
+        else if (action === "Score") {
+            promptScore();
         }
     });
+};
 
-const promptRow = () =>
+const promptRoll = () => {
+    if(game.state.rollCount === 0) {
+        game.roll(null);
+        promptAction();
+    } else {
+        inquirer.prompt([{
+            type: "checkbox",
+            name: "selection",
+            message: "Which dice do you want to roll",
+            choices: game.state.dice.map(toString)
+        }])
+        .then(({selection}) => {
+            game.roll(selection.map(toInt));
+        })
+        .then(promptAction);
+    }
+};
+
+const promptScore = () =>
     inquirer.prompt([
     {
         type: "checkbox",
         name: "selection",
         message: "Select the dice you want to score",
-        choices: game.state.dice.map(value => value.toString())
+        choices: game.state.dice.map(toString)
     },
     {
         type: "list",
@@ -41,7 +61,7 @@ const promptRow = () =>
         choices: Object.values(ScoreBoard)
     }
     ]).then(({ row, selection }) => {
-        game.score(row, selection.map(stringValue => parseInt(stringValue)));
+        game.score(row, selection.map(toInt));
         console.log(game.state.scoreBoards);
     })
 
