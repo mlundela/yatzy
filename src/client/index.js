@@ -2,21 +2,22 @@ import inquirer from 'inquirer';
 import {Yatzy} from '../Yatzy';
 import {ScoreBoard} from '../ScoreBoard';
 
-const game = new Yatzy({numberOfPlayers: 1});
-
 const toString = value => value.toString();
-
 const toInt = value => parseInt(value);
 
+const game = new Yatzy({numberOfPlayers: 1});
+
 const promptAction = () => {
-    console.log('Dice:', game.state.dice);
+    console.info(game.state.dice);
+    console.info(`You have ${3 - game.state.rollCount} rolls left and ${game.getTokens(game.state.player)} tokens`);
     inquirer.prompt([{
         type: "list",
         name: "action",
         message: "Choose your action",
         choices: [
             "Roll",
-            "Score"
+            "Score",
+            "Cross"
         ]
     }]).then(({action}) => {
         if (action === "Roll") {
@@ -24,6 +25,9 @@ const promptAction = () => {
         }
         else if (action === "Score") {
             promptScore();
+        }
+        else if (action === "Cross") {
+            promptCross();
         }
     });
 };
@@ -42,7 +46,8 @@ const promptRoll = () => {
         .then(({selection}) => {
             game.roll(selection.map(toInt));
         })
-        .then(promptAction);
+        .then(promptAction)
+        .catch(promptAction);
     }
 };
 
@@ -63,8 +68,37 @@ const promptScore = () =>
     ])
     .then(({ row, selection }) => {
         game.score(row, selection.map(toInt));
-        console.log(game.state.scoreBoards);
+        console.info(game.state.scoreBoards);
     })
-    .then(promptAction);
+    .then(promptAction)
+    .catch(promptAction);
 
-promptAction();
+const promptCross = () =>
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "row",
+            message: "Which row do you want to cross?",
+            choices: Object.values(ScoreBoard)
+        },
+        {
+            type: "confirm",
+            name: "confirmed",
+            message: "Are you sure?"
+        }
+    ])
+    .then(({ row, confirmed }) => {
+        if(confirmed) {
+            game.cross(row);
+        }
+        console.info(game.state.scoreBoards);
+    })
+    .then(promptAction)
+    .catch(promptAction);
+
+const play = () =>
+{
+    promptAction();
+};
+
+play();
