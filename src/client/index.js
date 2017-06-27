@@ -8,7 +8,7 @@ const toString = value => value.toString();
 
 const toInt = value => parseInt(value);
 
-const promptAction = (selection = null) => {
+const promptAction = () => {
     console.log('Dice:', game.state.dice);
     inquirer.prompt([{
         type: "list",
@@ -65,6 +65,6 @@ const promptScore = () =>
         game.score(row, selection.map(toInt));
         console.log(game.state.scoreBoards);
     })
-    .then(promptAction)
+    .then(promptAction);
 
 promptAction();
