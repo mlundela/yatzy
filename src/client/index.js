@@ -1,14 +1,31 @@
 import inquirer from 'inquirer';
 import {Yatzy} from '../Yatzy';
 import {ScoreBoard} from '../ScoreBoard';
+import CliTable from 'cli-table2';
 
 const toString = value => value.toString();
 const toInt = value => parseInt(value);
 
 const game = new Yatzy({numberOfPlayers: 1});
 
+const displayDice = () => {
+    const table = new CliTable({
+        head: [1,2,3,4,5,6].map(i => `Terning ${i}`)
+    });
+    table.push(game.state.dice);
+    console.log(table.toString());
+};
+
+const displayScoreBoard = () => {
+    const table = new CliTable({
+        head: Object.values(ScoreBoard).map(key => key.toUpperCase())
+    });
+    table.push(Object.values(game.state.scoreBoards[game.state.player]));
+    console.log(table.toString());
+};
+
 const promptAction = () => {
-    console.info(game.state.dice);
+    displayDice();
     console.info(`You have ${3 - game.state.rollCount} rolls left and ${game.getTokens(game.state.player)} tokens`);
     inquirer.prompt([{
         type: "list",
@@ -68,7 +85,7 @@ const promptScore = () =>
     ])
     .then(({ row, selection }) => {
         game.score(row, selection.map(toInt));
-        console.info(game.state.scoreBoards);
+        displayScoreBoard();
     })
     .then(promptAction)
     .catch(promptAction);
@@ -91,7 +108,7 @@ const promptCross = () =>
         if(confirmed) {
             game.cross(row);
         }
-        console.info(game.state.scoreBoards);
+        displayScoreBoard();
     })
     .then(promptAction)
     .catch(promptAction);
