@@ -25,7 +25,6 @@ const displayScoreBoard = () => {
 };
 
 const promptAction = () => {
-    displayDice();
     console.info(`You have ${3 - game.state.rollCount} rolls left and ${game.getTokens(game.state.player)} tokens`);
     inquirer.prompt([{
         type: "list",
@@ -52,6 +51,7 @@ const promptAction = () => {
 const promptRoll = () => {
     if(game.state.rollCount === 0) {
         game.roll(null);
+        displayDice();
         promptAction();
     } else {
         inquirer.prompt([{
@@ -62,6 +62,7 @@ const promptRoll = () => {
         }])
         .then(({selection}) => {
             game.roll(selection.map(toInt));
+            displayDice();
         })
         .then(promptAction)
         .catch(promptAction);
