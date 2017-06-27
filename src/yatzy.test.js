@@ -229,3 +229,21 @@ test('Yatzy.getOpenRows should return all unused slots/rows', () => {
   yatzy.cross(ScoreBoard.SMALL_STREET);
   expect(yatzy.getOpenRows(0)).toEqual(Object.values(ScoreBoard).filter(v => v != ScoreBoard.SMALL_STREET));
 });
+
+test('A player rethrows after first keeping dice', () => {
+
+  const yatzy = new Yatzy({numberOfPlayers: 1});
+
+  const d0 = yatzy.roll();
+  expect(yatzy.state.dice).toEqual(d0);
+
+  // Keep last three dice
+  const d1 = yatzy.roll(d0.slice(3));
+  expect(d1.length).toEqual(3);
+  expect(yatzy.state.dice).toEqual([...d0.slice(0, 3), ...d1]);
+
+  // Keep d1 dice and rethrow rest of d0 dice
+  const d2 = yatzy.roll(d0.slice(0, 3));
+  expect(d2.length).toEqual(3);
+  expect(yatzy.state.dice).toEqual([...d1, ...d2]);
+});
