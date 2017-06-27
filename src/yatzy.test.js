@@ -180,7 +180,7 @@ test('Cross out small street', () => {
 
   const scoreBoard = yatzy.getScoreBoards()[0];
 
-  expect(scoreBoard).toHaveProperty(ScoreBoard.SMALL_STREET, -1);
+  expect(scoreBoard).toHaveProperty(ScoreBoard.SMALL_STREET, 0);
   expect(() => yatzy.score(ScoreBoard.SMALL_STREET, [1, 2, 3, 4, 5])).toThrow('Illegal score');
 });
 
@@ -223,8 +223,9 @@ test('A player use 1 token to roll 4 times', () => {
 });
 
 test('Yatzy.getOpenRows should return all unused slots/rows', () => {
-    const yatzy = new Yatzy({numberOfPlayers: 1});
-    expect(yatzy.getOpenRows(0)).toEqual(Object.values(ScoreBoard));
-    yatzy.cross(ScoreBoard.SMALL_STREET);
-    expect(yatzy.getOpenRows(0)).toEqual(Object.values(ScoreBoard).filter(v => v != ScoreBoard.SMALL_STREET));
+  const yatzy = new Yatzy({numberOfPlayers: 1});
+  const openRows = yatzy.getOpenRows(0);
+  expect(openRows).toEqual(Object.values(ScoreBoard));
+  yatzy.cross(ScoreBoard.SMALL_STREET);
+  expect(yatzy.getOpenRows(0)).toEqual(Object.values(ScoreBoard).filter(v => v != ScoreBoard.SMALL_STREET));
 });

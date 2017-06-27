@@ -17,7 +17,10 @@ export class Yatzy {
   }
 
   getOpenRows(playerIndex) {
-    return [];
+    const rows = this.state.scoreBoards[playerIndex];
+    return Object
+      .keys(rows)
+      .filter(x => rows[x] === null);
   }
 
   getScoreBoards() {

@@ -91,9 +91,12 @@ export const isValidSelection = (dice, row, selection) => {
 
 export const createScoreBoard = () => Object
     .values(ScoreBoard)
-    .reduce((obj, row) => ({...obj, [row]: 0}), {});
+    .reduce((obj, row) => ({...obj, [row]: null}), {});
 
-export const getTotalScore = scoreBoard => scoreBoard.map(b => Object.values(b).filter(v => v >= 0).reduce(sum, 0));
+export const getTotalScore = scoreBoard => scoreBoard
+  .map(b => Object
+    .values(b)
+    .reduce(sum, 0));
 
 export const createInitialState = numberOfPlayers => ({
     dice: [],

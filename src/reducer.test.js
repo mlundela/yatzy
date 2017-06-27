@@ -72,7 +72,7 @@ test('Bonus should be 100 if SUM ones through sixes >= 84', () => {
             [ScoreBoard.TWOS]: 8,
             [ScoreBoard.THREES]: 12,
             [ScoreBoard.FOURS]: 16,
-            [ScoreBoard.FIVES]: 0,
+            [ScoreBoard.FIVES]: null,
             [ScoreBoard.SIXES]: 24,
         }]
     };
