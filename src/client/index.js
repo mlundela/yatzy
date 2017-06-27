@@ -60,9 +60,11 @@ const promptScore = () =>
         message: "Where do you want to place your score?",
         choices: Object.values(ScoreBoard)
     }
-    ]).then(({ row, selection }) => {
+    ])
+    .then(({ row, selection }) => {
         game.score(row, selection.map(toInt));
         console.log(game.state.scoreBoards);
     })
+    .then(promptAction)
 
 promptAction();
